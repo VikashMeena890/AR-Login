@@ -1,8 +1,19 @@
-name: AgentRouter Daily Login
+name: AgentRouter Login (20h cycle)
 
+# Every 20 hours = 6 logins per 5 days, still anchored on the old 18:00 UTC slot.
+# 20h does not divide evenly into 24h, so one daily cron cannot express it. Instead the
+# 5-day cycle is listed out: 18:00 → 14:00 → 10:00 → 06:00 → 02:00 → 22:00 → repeat.
+# The day-of-month lists are (day - 1) mod 5, so the 20h spacing holds through any month.
+# The phase restarts with each new calendar month, which never skips a UTC day — at worst
+# it stretches one gap to 24h (31-day months) or 32-36h (February).
 on:
   schedule:
-    - cron: '0 18 * * *'
+    - cron: '0 18 1,6,11,16,21,26,31 * *'  # cycle day 1 of 5
+    - cron: '0 14 2,7,12,17,22,27 * *'     # cycle day 2 of 5
+    - cron: '0 10 3,8,13,18,23,28 * *'     # cycle day 3 of 5
+    - cron: '0 6 4,9,14,19,24,29 * *'      # cycle day 4 of 5
+    - cron: '0 2 5,10,15,20,25,30 * *'     # cycle day 5 of 5
+    - cron: '0 22 5,10,15,20,25,30 * *'    # 20h after the 02:00 slot, same day
   workflow_dispatch:  # Manual trigger for testing
 
 jobs:
